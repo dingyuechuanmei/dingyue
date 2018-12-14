@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://www.92php.net" versionCode="0.6">
+	<application setting="false">
+		<name><![CDATA[志汇超级外卖餐饮小程序]]></name>
+		<identifie><![CDATA[zh_cjdianc]]></identifie>
+		<version><![CDATA[5.2.0]]></version>
+		<type><![CDATA[biz]]></type>
+		<ability><![CDATA[帮助餐饮企业降低成本、提高效率,实现顾客引流、会员沉淀、企业发展的经营目标。]]></ability>
+		<description><![CDATA[志汇-超级餐饮外卖小程序，专注于餐饮O2O的解决方案提供商,为餐厅提供整合线上线下资源整合、轻松实现O2O。本软件集点餐、收银、成本控制、管理、营销于一体的会营销的餐饮管理软件]]></description>
+		<author><![CDATA[残风社区]]></author>
+		<url><![CDATA[http://www.92php.net]]></url>
+	</application>
+	<platform>
+		<subscribes>
+		</subscribes>
+		<handles>
+		</handles>
+		<rule embed="false" />
+		<card embed="false" />
+		<supports><item type="wxapp" /></supports>
+		<plugin-main name="0" />
+	</platform>
+	<bindings>
+		<page>
+			<entry title="首页" do="/zh_cjdianc/pages/index/index" state="" direct="false" />
+		</page>
+	</bindings>
+	<permissions>
+	</permissions>
+	<install><![CDATA[m_install.php]]></install>
+	<uninstall><![CDATA[DROP TABLE IF EXISTS `ims_cjdc_account`;
+DROP TABLE IF EXISTS `ims_cjdc_ad`;
+DROP TABLE IF EXISTS `ims_cjdc_area`;
+DROP TABLE IF EXISTS `ims_cjdc_assess`;
+DROP TABLE IF EXISTS `ims_cjdc_call`;
+DROP TABLE IF EXISTS `ims_cjdc_calllog`;
+DROP TABLE IF EXISTS `ims_cjdc_commission_withdrawal`;
+DROP TABLE IF EXISTS `ims_cjdc_coupons`;
+DROP TABLE IF EXISTS `ims_cjdc_couponset`;
+DROP TABLE IF EXISTS `ims_cjdc_cptj`;
+DROP TABLE IF EXISTS `ims_cjdc_czhd`;
+DROP TABLE IF EXISTS `ims_cjdc_czorder`;
+DROP TABLE IF EXISTS `ims_cjdc_distribution`;
+DROP TABLE IF EXISTS `ims_cjdc_drorder`;
+DROP TABLE IF EXISTS `ims_cjdc_dyj`;
+DROP TABLE IF EXISTS `ims_cjdc_dytag`;
+DROP TABLE IF EXISTS `ims_cjdc_earnings`;
+DROP TABLE IF EXISTS `ims_cjdc_formid`;
+DROP TABLE IF EXISTS `ims_cjdc_fxset`;
+DROP TABLE IF EXISTS `ims_cjdc_fxuser`;
+DROP TABLE IF EXISTS `ims_cjdc_goods`;
+DROP TABLE IF EXISTS `ims_cjdc_group`;
+DROP TABLE IF EXISTS `ims_cjdc_groupgoods`;
+DROP TABLE IF EXISTS `ims_cjdc_grouphx`;
+DROP TABLE IF EXISTS `ims_cjdc_grouporder`;
+DROP TABLE IF EXISTS `ims_cjdc_grouptype`;
+DROP TABLE IF EXISTS `ims_cjdc_help`;
+DROP TABLE IF EXISTS `ims_cjdc_hyorder`;
+DROP TABLE IF EXISTS `ims_cjdc_hyqx`;
+DROP TABLE IF EXISTS `ims_cjdc_integral`;
+DROP TABLE IF EXISTS `ims_cjdc_jfgoods`;
+DROP TABLE IF EXISTS `ims_cjdc_jfrecord`;
+DROP TABLE IF EXISTS `ims_cjdc_jftype`;
+DROP TABLE IF EXISTS `ims_cjdc_kfwset`;
+DROP TABLE IF EXISTS `ims_cjdc_message`;
+DROP TABLE IF EXISTS `ims_cjdc_message2`;
+DROP TABLE IF EXISTS `ims_cjdc_nav`;
+DROP TABLE IF EXISTS `ims_cjdc_order`;
+DROP TABLE IF EXISTS `ims_cjdc_order_goods`;
+DROP TABLE IF EXISTS `ims_cjdc_pay`;
+DROP TABLE IF EXISTS `ims_cjdc_psset`;
+DROP TABLE IF EXISTS `ims_cjdc_qbmx`;
+DROP TABLE IF EXISTS `ims_cjdc_qggoods`;
+DROP TABLE IF EXISTS `ims_cjdc_qgorder`;
+DROP TABLE IF EXISTS `ims_cjdc_qgtype`;
+DROP TABLE IF EXISTS `ims_cjdc_reduction`;
+DROP TABLE IF EXISTS `ims_cjdc_retail`;
+DROP TABLE IF EXISTS `ims_cjdc_rzlog`;
+DROP TABLE IF EXISTS `ims_cjdc_rzqx`;
+DROP TABLE IF EXISTS `ims_cjdc_rzset`;
+DROP TABLE IF EXISTS `ims_cjdc_shopcar`;
+DROP TABLE IF EXISTS `ims_cjdc_sms`;
+DROP TABLE IF EXISTS `ims_cjdc_spec`;
+DROP TABLE IF EXISTS `ims_cjdc_spec_combination`;
+DROP TABLE IF EXISTS `ims_cjdc_spec_val`;
+DROP TABLE IF EXISTS `ims_cjdc_store`;
+DROP TABLE IF EXISTS `ims_cjdc_storead`;
+DROP TABLE IF EXISTS `ims_cjdc_storeset`;
+DROP TABLE IF EXISTS `ims_cjdc_storetype`;
+DROP TABLE IF EXISTS `ims_cjdc_system`;
+DROP TABLE IF EXISTS `ims_cjdc_table`;
+DROP TABLE IF EXISTS `ims_cjdc_table_type`;
+DROP TABLE IF EXISTS `ims_cjdc_txset`;
+DROP TABLE IF EXISTS `ims_cjdc_type`;
+DROP TABLE IF EXISTS `ims_cjdc_typead`;
+DROP TABLE IF EXISTS `ims_cjdc_user`;
+DROP TABLE IF EXISTS `ims_cjdc_useradd`;
+DROP TABLE IF EXISTS `ims_cjdc_usercoupons`;
+DROP TABLE IF EXISTS `ims_cjdc_withdrawal`;
+]]></uninstall>
+	<upgrade><![CDATA[m_upgrade.php]]></upgrade>
+</manifest>
