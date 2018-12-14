@@ -412,6 +412,11 @@ Page({
             duration: 1e3
         });
     },
+    wkzc: function () {
+        wx.navigateToMiniProgram({
+          appId: 'wx2c2d379a1806d40f'
+        })
+    },
     dwreLoad: function() {
         var i = this, o = this.data.params;
         wx.getLocation({
@@ -519,7 +524,7 @@ Page({
         })) : 2 == o ? (wx.setStorageSync("vr", i), wx.navigateTo({
             url: "../car/car"
         })) : 3 == o && wx.navigateToMiniProgram({
-            appId: s
+              appId: 'wx2c2d379a1806d40f'
         });
     },
     tzsjxq: function(t) {

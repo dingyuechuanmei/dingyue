@@ -1,0 +1,2 @@
+echoback=tr5WD
+action=verifyInterface

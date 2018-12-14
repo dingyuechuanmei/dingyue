@@ -243,6 +243,9 @@
         <view class="copyright_txt">{{mdxx.support}}</view>
     </view>
 </view>
+<button bindtap="wkzc" class="wkzc">
+    <image src="../../img/wkzc.png"></image>
+</button>
 <button bindtap="hddb" class="hddb">
     <image src="../../img/zd.png"></image>
 </button>
