@@ -5,7 +5,7 @@ $config = array();
 
 $config['db']['master']['host'] = '127.0.0.1';
 $config['db']['master']['username'] = 'zhongchou';
-$config['db']['master']['password'] = 'JB6TvquVFpswTClx';
+$config['db']['master']['password'] = 'zhongchou';
 $config['db']['master']['port'] = '3306';
 $config['db']['master']['database'] = 'zhongchou';
 $config['db']['master']['charset'] = 'utf8';
