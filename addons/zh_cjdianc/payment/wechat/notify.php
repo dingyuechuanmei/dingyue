@@ -62,20 +62,20 @@ $url=substr($str,0,$n);
 	$qgorder=pdo_get('cjdc_qgorder',array('code'=>$logno));
 	$grouporder=pdo_get('cjdc_grouporder',array('code'=>$logno));
 	if($grouporder['state']==1){
-	pdo_update('cjdc_grouporder',array('state'=>2,'pay_time'=>time()),array('id'=>$grouporder['id']));
-	//改变商品
-	pdo_update('cjdc_groupgoods',array('ysc_num +='=>$grouporder['goods_num'],'inventory -='=>$grouporder['goods_num']),array('id'=>$grouporder['goods_id']));
-	if($grouporder['group_id']>0){
-	$count=pdo_get('cjdc_grouporder', array('group_id'=>$grouporder['group_id'],'state '=>2), array('count(user_id) as count'));
-	$group=pdo_get('cjdc_group',array('id'=>$grouporder['group_id']));
-	if($group['kt_num']==$count['count']){
-		$state=2;
-	}else{
-		$state=1;
-	}
-	//改变团状态
-	pdo_update('cjdc_group',array('state'=>$state,'yg_num +='=>1),array('id'=>$grouporder['group_id']));
-	}			
+		pdo_update('cjdc_grouporder',array('state'=>2,'pay_time'=>time()),array('id'=>$grouporder['id']));
+		//改变商品
+		pdo_update('cjdc_groupgoods',array('ysc_num +='=>$grouporder['goods_num'],'inventory -='=>$grouporder['goods_num']),array('id'=>$grouporder['goods_id']));
+		if($grouporder['group_id']>0){
+			$count=pdo_get('cjdc_grouporder', array('group_id'=>$grouporder['group_id'],'state '=>2), array('count(user_id) as count'));
+			$group=pdo_get('cjdc_group',array('id'=>$grouporder['group_id']));
+			if($group['kt_num']==$count['count']){
+				$state=2;
+			}else{
+				$state=1;
+			}
+			//改变团状态
+			pdo_update('cjdc_group',array('state'=>$state,'yg_num +='=>1),array('id'=>$grouporder['group_id']));
+		}
 	}
 	if($qgorder['state']==1){
 		$time=time();

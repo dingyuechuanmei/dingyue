@@ -15,7 +15,7 @@ $cur_store = $this->getStoreById($storeid);
 $type=isset($_GPC['type'])?$_GPC['type']:'today';
 $pageindex = max(1, intval($_GPC['page']));
 $pagesize=10;
-$where=" where a.uniacid=:uniacid and a.store_id=:store_id  and a.state in (3,5)" ;
+$where=" where a.uniacid=:uniacid and a.store_id=:store_id  and a.state in (2,3,4,5)" ;
 $data[':uniacid']=$_W['uniacid'];
 $data[':store_id']=$storeid;
 if($_GPC['time']){
@@ -55,13 +55,14 @@ $total=pdo_fetchcolumn("SELECT count(*) FROM ".tablename('cjdc_grouporder'). " a
 $select_sql =$sql." LIMIT " .($pageindex - 1) * $pagesize.",".$pagesize;
 $pager = pagination($total, $pageindex, $pagesize);
 $list=pdo_fetchall($select_sql,$data);
+
 ///运费服务费
 $fw_money= number_format($list4['dn_poundage']/100*($list2['total_money']),2);
 //
 if(checksubmit('export_submit', true)) {
   $start=strtotime($_GPC['time']['start']);
   $end=strtotime($_GPC['time']['end']);
-  $count = pdo_fetchcolumn("SELECT COUNT(*) FROM". tablename("cjdc_grouporder")." WHERE  store_id={$storeid}  and state in (3,5) and time >='{$start}' and time<='{$end}'");
+  $count = pdo_fetchcolumn("SELECT COUNT(*) FROM". tablename("cjdc_grouporder")." WHERE  store_id={$storeid}  and state in (2,3,4,5) and time >='{$start}' and time<='{$end}'");
   $pagesize = ceil($count/5000);
         //array_unshift( $names,  '活动名称'); 
   $header = array(
@@ -86,7 +87,7 @@ if(checksubmit('export_submit', true)) {
   }
   $html .= "\n";
   for ($j = 1; $j <= $pagesize; $j++) {
-    $sql = "select * from " . tablename("cjdc_grouporder")." WHERE store_id={$storeid}  and state in (3,5) and time >='{$start}' and time<='{$end}' ORDER BY id DESC limit " . ($j - 1) * 5000 . ",5000 ";
+    $sql = "select * from " . tablename("cjdc_grouporder")." WHERE store_id={$storeid}  and state in (2,3,4,5) and time >='{$start}' and time<='{$end}' ORDER BY id DESC limit " . ($j - 1) * 5000 . ",5000 ";
     $list = pdo_fetchall($sql);            
   }
 

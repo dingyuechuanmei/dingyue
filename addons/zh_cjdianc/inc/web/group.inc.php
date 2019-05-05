@@ -41,10 +41,10 @@ if($_GPC['time']){
 
 }
 $sql="SELECT * FROM ".tablename('cjdc_group').$where." ORDER BY id DESC";
-$total=pdo_fetchcolumn("SELECT * FROM ".tablename('cjdc_group').$where,$data);
+$total=pdo_fetchcolumn("SELECT count(*) FROM ".tablename('cjdc_group').$where,$data);
 $select_sql =$sql." LIMIT " .($pageindex - 1) * $pagesize.",".$pagesize;
 
 $list=pdo_fetchall($select_sql,$data);
-
+$pager = pagination($total, $pageindex, $pagesize);
 //打印
 include $this->template('web/group');

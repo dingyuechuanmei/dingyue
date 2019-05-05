@@ -677,7 +677,24 @@ public function doPageDishesList() {
 		  file_get_contents("".$_W['siteroot']."app/index.php?i=".$_W['uniacid']."&c=entry&a=wxapp&do=HcPrint&m=zh_cjdianc&order_id=".$order_id);//打印机
 		  file_get_contents("".$_W['siteroot']."app/index.php?i=".$_W['uniacid']."&c=entry&a=wxapp&do=sms&m=zh_cjdianc&type=1&store_id=".$_GPC['store_id']);//短信
 		  }
-        	pdo_delete('cjdc_shopcar',array('user_id'=>$_GPC['user_id'],'store_id'=>$_GPC['store_id'],'type'=>1));
+		pdo_delete('cjdc_shopcar',array('user_id'=>$_GPC['user_id'],'store_id'=>$_GPC['store_id'],'type'=>1));
+		/**
+		*  发送短信通知
+		*/
+		$store=pdo_get('cjdc_store',array('id'=>$_GPC['store_id']));
+		if (!empty($store) && !empty($store['tel'])) {
+			$url = "http://cf.51welink.com/submitdata/service.asmx/g_Submit?";
+			$post_data = array(
+				'sname'   => 'zhongchou',
+				'spwd'    => 'zhongchou123',
+				'scorpid' => '1012808',
+				'sprdid'  => '1012888',
+				'sdst'    => $store['tel'],
+				'smsg'    => '【微客本地外卖】您有一笔'.$_GPC['money'].'元的订单,请及时登录商家后台处理',
+			);
+			load()->func('communication');
+			ihttp_post($url,$post_data);
+		}
         echo $order_id;
     }else{
     	echo '下单失败';
@@ -5400,13 +5417,23 @@ public function  doPageGroupYePay(){
 	}
 }
 
-//查看团员信息
-public function doPageGetGroupUserInfo(){
-	global $_W, $_GPC;
-	$sql=" select a.id,b.name,b.img from".tablename('cjdc_grouporder')." a left join ".tablename('cjdc_user')."b on a.user_id=b.id where a.group_id=:group_id and a.state=2";
-	$group=pdo_fetchall($sql,array(':group_id'=>$_GPC['group_id']));
-	echo json_encode($group);
-}
+	//查看团员信息
+	public function doPageGetGroupUserInfo(){
+		global $_W, $_GPC;
+		$sql=" select a.id,b.name,b.img from".tablename('cjdc_grouporder')." a left join ".tablename('cjdc_user')."b on a.user_id=b.id where a.group_id=:group_id and a.state=2";
+		$group=pdo_fetchall($sql,array(':group_id'=>$_GPC['group_id']));
+		echo json_encode($group);
+	}
+
+	/**
+	 * 新用户在参团的时候会显示已经参团,前端是用name判断用户是否已经参团,修改为用openid判断用户,防止影响到其它接口的正常使用,复制doPageGetGroupUserInfo添加openid字段
+	 */
+	public function doPageMyGetGroupUserInfo(){
+		global $_W, $_GPC;
+		$sql=" select a.id,b.name,b.img,b.openid from".tablename('cjdc_grouporder')." a left join ".tablename('cjdc_user')."b on a.user_id=b.id where a.group_id=:group_id and a.state=2";
+		$group=pdo_fetchall($sql,array(':group_id'=>$_GPC['group_id']));
+		echo json_encode($group);
+	}
 
 //分销二维码
     public function doPageGoodsCode(){
@@ -5489,7 +5516,8 @@ public function doPageMyGroupOrder(){
 	$select_sql =$sql." LIMIT " .($pageindex - 1) * $pagesize.",".$pagesize;
 	$res=pdo_fetchall($select_sql);
 	echo json_encode($res);
-	pdo_update('cjdc_grouporder',array('state'=>5,'cz_time'=>time()),array('xf_time <='=>time(),'uniacid'=>$_W['uniacid'],'state'=>2));
+	//用户已经付款,会造成订单失效,先注释
+	//pdo_update('cjdc_grouporder',array('state'=>5,'cz_time'=>time()),array('xf_time <='=>time(),'uniacid'=>$_W['uniacid'],'state'=>2));
 
 }
 
@@ -5607,38 +5635,150 @@ public function doPageGroupOrderInfo(){
     		$result = $WxPayApi->refund($input, 6, $path_cert, $path_key, $key);
 
  ////////////////////////////////////
-    if ($result['result_code'] == 'SUCCESS' || $tkres) {//退款成功
-        //更改订单操作
-    	pdo_update('cjdc_grouporder',array('state'=>4),array('id'=>$value));
-    }
+			if ($result['result_code'] == 'SUCCESS' || $tkres) {//退款成功
+				//更改订单操作
+				pdo_update('cjdc_grouporder',array('state'=>4),array('id'=>$value));
+			}
+
+		}
+
+		$yorders=pdo_getall('cjdc_grouporder',array('group_id'=>$uids,'state'=>2,'pay_type'=>2),'id');
+		foreach ($yorders as $key => $value2) {
+			$type=pdo_get('cjdc_grouporder',array('id'=>$value2));
+			pdo_update('cjdc_user', array('wallet +=' => $type['money']), array('id' => $type['user_id']));
+			$tk['money'] = $type['money'];
+			$tk['user_id'] = $type['user_id'];
+			$tk['type'] = 1;
+			$tk['note'] = '拼团失败';
+			$tk['time'] = date('Y-m-d H:i:s');
+			$tkres = pdo_insert('cjdc_qbmx', $tk);
+			pdo_update('cjdc_grouporder',array('state'=>4),array('id'=>$value2));
+
+		}
+
+		$group=pdo_update('cjdc_group',array('state'=>3),array('id'=>$uids));
+
+	}
+
+
+	public function GETSiteroot(){
+		global $_W, $_GPC;
+		echo $_W['siteroot'];
+	}
+
+	/**
+	 * 商家工作台->财务管理
+	 */
+	public function doPageFinanceList(){
+		global $_W, $_GPC;
+		$psize = 10;
+		$pindex = max(1, intval($_GPC['page']));
+		$selectedindex = intval($_GPC['selectedindex']);
+		$data = array(
+			':uniacid' => $_W['uniacid'],
+			':store_id' => $_GPC['store_id'],
+			'state' => $selectedindex+1
+		);
+		$limt = (($pindex - 1) * $psize) . ',' . $psize;
+		$where2=" where a.store_id=:store_id AND a.uniacid = :uniacid AND a.state = :state";
+		$sql="SELECT a.*,b.name,b.user_id FROM ".tablename('cjdc_withdrawal') .  " a"  . " left join " . tablename("cjdc_store") . " b on a.store_id=b.id".$where2." ORDER BY a.time DESC LIMIT ".$limt;
+		$total=pdo_fetchcolumn("SELECT count(*) FROM ".tablename('cjdc_withdrawal') .  " a"  . " left join " . tablename("cjdc_store") . " b on a.store_id=b.id ".$where2,$data);
+		$list=pdo_fetchall($sql,$data);
+		$pageCount = ceil($total/$psize);
+		$result = array(
+			'list' => $list,
+			'pageCount' => $pageCount
+		);
+		echo json_encode($result);
+	}
+
+	protected function getWithdrawalAmount($storeid)
+	{
+		global $_W, $_GPC;
+		$data = array(
+			':uniacid' => $_W['uniacid'],
+			':store_id' => $storeid
+		);
+		$storeid = $_GPC['store_id'];
+		//获取商家手续费
+		$sql="select b.poundage,b.dn_poundage,b.dm_poundage,b.yd_poundage from".tablename('cjdc_store')."a  left join ".tablename('cjdc_storetype')." b on a.md_type=b.id where a.id={$storeid}";
+		$list4=pdo_fetch($sql);
+		$where=" where a.uniacid=:uniacid and a.type=1 and a.store_id=:store_id and a.pay_type in (1,2) and a.state in (4,5,10)" ;
+//总数统计
+		$sql2="select sum(money) as 'total_money',sum(ps_money) as ps_money from" . tablename("cjdc_order") ." as a".$where;
+		$list2=pdo_fetch($sql2,$data);
+		//店内订单金额统计
+		$dnwmcost=pdo_get('cjdc_order', array('store_id'=>$storeid,'dn_state '=>2,'pay_type'=>array(1,2),'type'=>2), array('sum(money) as total_money'));
+		//当面付订单金额统计
+		$dmcost=pdo_get('cjdc_order', array('store_id'=>$storeid,'dm_state '=>2,'pay_type'=>array(1,2),'type'=>4), array('sum(money) as total_money'));
+		//预约订单金额
+		$yycost=pdo_get('cjdc_order', array('store_id'=>$storeid,'yy_state '=>3,'pay_type'=>array(1,2),'type'=>3), array('sum(money) as total_money'));
+		//已申请金额
+		$total=pdo_get('cjdc_withdrawal', array('store_id'=>$storeid,'state '=>1), array('sum(tx_cost) as tx_cost'));
+		//已提现金额
+		$total2=pdo_get('cjdc_withdrawal', array('store_id'=>$storeid,'state '=>2), array('sum(tx_cost) as tx_cost'));
+		//运费服务费
+		$sys=pdo_get('cjdc_store',array('id'=>$storeid),'ps_poundage');
+		$ps_money=number_format($list2['ps_money']*$sys['ps_poundage']/100,1);
+		//抢购金额
+		$qg_money=pdo_get('cjdc_qgorder', array('store_id'=>$storeid,'state'=>array(2,3)), array('sum(money) as total_money'));
+		//拼团金额
+		$pt_money=pdo_get('cjdc_grouporder', array('store_id'=>$storeid,'state'=>array(3,5)), array('sum(money) as total_money'));
+		$tuan=$qg_money['total_money']+$pt_money['total_money']-$list4['dn_poundage']*($qg_money['total_money']+$pt_money['total_money'])/100;
+		$ktxcost=number_format(($list2['total_money']+$dnwmcost['total_money']+$dmcost['total_money']+$yycost['$total_money'])-(($list2['total_money']*$list4['poundage']+$dnwmcost['total_money']*$list4['dn_poundage']+$dmcost['total_money']*$list4['dm_poundage']+$yycost['$total_money']*$list4['yd_poundage'])/100)-$total['tx_cost']-$total2['tx_cost']-$ps_money+$tuan,2);
+		return $ktxcost;
+	}
+
+	/**
+	 * 可提现金额
+	 */
+	public function doPageCasWithdrawalAmount()
+	{
+		global $_W, $_GPC;
+		$ktxcost = $this->getWithdrawalAmount( $_GPC['store_id']);
+		$result = array(
+			'ktxcost' => number_format($ktxcost,2)
+		);
+		echo json_encode($result);
+	}
+
+	/**
+	 * 申请提现
+	 */
+	public function doPageApplyWithdrawal()
+	{
+		global $_W, $_GPC;
+		if (empty($_GPC['store_id'])) {
+			echo json_encode(array('status'=>0,'message'=>'非法参数'));
+			exit;
+		}
+		if (empty($_GPC['name'])) {
+			echo json_encode(array('status'=>0,'message'=>'请输入收款人姓名'));
+			exit;
+		}
+		if (empty($_GPC['tx_cost'])) {
+			echo json_encode(array('status'=>0,'message'=>'请输入提现金额'));
+			exit;
+		}
+		$ktxcost = $this->getWithdrawalAmount( $_GPC['store_id']);
+		if ($_GPC['tx_cost'] > $ktxcost) {
+			echo json_encode(array('status'=>0,'message'=>'提现金额大于可提现金额'));
+			exit;
+		}
+		$data['store_id'] = $_GPC['store_id'];
+		$data['name'] = $_GPC['name'];
+		$data['tx_cost'] = number_format($_GPC['tx_cost'],2);
+		$data['sj_cost'] = number_format($_GPC['tx_cost'],2);
+		$data['type'] = $_GPC['type'] ? $_GPC['type'] : 0;
+		$data['time'] = date('Y-m-d H:i:s');
+		$data['state'] = 1;
+		$data['uniacid'] = $_W['uniacid'];
+		$res = pdo_insert('cjdc_withdrawal',$data);
+		if (!empty($res)) {
+			echo json_encode(array('status'=>1));
+		} else {
+			echo json_encode(array('status'=>0,'message'=>'保存失败'));
+		}
+	}
 
 }
-
-$yorders=pdo_getall('cjdc_grouporder',array('group_id'=>$uids,'state'=>2,'pay_type'=>2),'id');
-foreach ($yorders as $key => $value2) {
-	$type=pdo_get('cjdc_grouporder',array('id'=>$value2));
-	pdo_update('cjdc_user', array('wallet +=' => $type['money']), array('id' => $type['user_id']));
-	$tk['money'] = $type['money'];
-	$tk['user_id'] = $type['user_id'];
-	$tk['type'] = 1;
-	$tk['note'] = '拼团失败';
-	$tk['time'] = date('Y-m-d H:i:s');
-	$tkres = pdo_insert('cjdc_qbmx', $tk);
-	pdo_update('cjdc_grouporder',array('state'=>4),array('id'=>$value2));
-
-}
-
-$group=pdo_update('cjdc_group',array('state'=>3),array('id'=>$uids));
-
-}
-
-
-public function GETSiteroot(){
-	global $_W, $_GPC;
-	echo $_W['siteroot'];
-}
-
-//
-
-
-}//////////////////////////////////////////////////////////

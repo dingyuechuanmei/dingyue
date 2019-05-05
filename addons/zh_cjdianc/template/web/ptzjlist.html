@@ -168,7 +168,7 @@
                             {$item['order_num']}
                         </td>
                         <td>
-                           {$item['time']}
+                           {php echo date('Y-m-d H:i:s',$item['time'])}
                         </td>
                        
                         {if $item['pay_type']==1}
@@ -209,7 +209,7 @@
                      {php echo number_format(($list4['poundage']/100*$item['money']),2)+number_format(($sys['ps_poundage']/100*$item['ps_money']),2)}                     
                         </td>
                      
-                        {if  $item['state']==3 or $item['state']==5 }
+                        {if  $item['state']==2 or$item['state']==3 or $item['state']==4 or $item['state']==5 }
                         <td >
                         <span class="label storesuccess">
                       已入账   
